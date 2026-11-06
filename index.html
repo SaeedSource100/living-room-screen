@@ -912,6 +912,7 @@ function renderGrid(){
     if(AH.next){const n=AH.next;h+=`<div class="nx"><div class="s1">المباراة القادمة</div><b>${img(n.ol)}${n.home===false?esc(n.o)+' × الأهلي':'الأهلي × '+esc(n.o)}</b><div class="s2">${dLabel(n.d)} · ${f12(TT(n))}</div></div>`}
     cols.push(h+`</div>`);
   }
+  const c0=cols.length;
   if(S.sRosh&&DATA.fx&&DATA.fx.length){
     const today=dayFmt.format(Date.now()),days=[...new Set(DATA.fx.map(m=>m.d))].filter(d=>d>=today).sort();
     const d0=days[0];
@@ -926,6 +927,7 @@ function renderGrid(){
       cols.push(h+`</div>`);
     }
   }
+  if(S.sRosh&&cols.length===c0)cols.push(`<div class="col"><h4>دوري روشن</h4><div class="empty" style="padding:14px 0">لا مباريات في الأيام القادمة (توقف)</div></div>`);
   if(S.sEu&&DATA.eu&&DATA.eu.length){
     let h=`<div class="col"><h4>أبرز المباريات الأوروبية</h4>`;
     DATA.eu.slice(0,6).forEach(m=>{h+=`<div class="erow"><div><small>${esc(LGN[m.lg]||'')}</small><span class="tt">${img(m.hl)}${esc(m.h)} × ${esc(m.a)}${img(m.al)}</span></div><span class="wh2">${dLabel(m.d)} · ${f12(Date.parse(m.d+'T'+m.t+':00+03:00'))}</span></div>`});

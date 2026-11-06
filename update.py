@@ -72,8 +72,8 @@ def parse_utc(s):
 def fixtures():
     out = []
     today = NOW.date()
-    keep = {(today + dt.timedelta(days=i)).isoformat() for i in range(0, 5)}
-    for off in (-1, 0, 1, 2, 3, 4):
+    keep = {(today + dt.timedelta(days=i)).isoformat() for i in range(0, 15)}
+    for off in range(-1, 15):
         day = (NOW + dt.timedelta(days=off)).strftime("%Y%m%d")
         j = json.loads(get("https://site.api.espn.com/apis/site/v2/sports/soccer/ksa.1/scoreboard?dates=" + day))
         for ev in j.get("events", []):
