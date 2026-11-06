@@ -430,13 +430,14 @@ function buildSettings(){
    tests:mu('تجارب العروض',gp('',tb('fri','الجمعة'))+gp('',tb('rain','المطر'))+gp('',tb('match','مباراة مباشرة'))+gp('',tb('win','مبروك الفوز')),'تنتهي تلقائياً، وزر الرجوع يوقفها'),
    sc1:rw('وضع الجمعة',tg('friday')+tb('fri','تجربة')),sc2:rw('وضع المطر',tg('rain')+tb('rain','تجربة')),sc3:rw('مباراة مباشرة',tb('match','تجربة')),sc4:rw('مبروك الفوز',tb('win','تجربة')),
    stl:`<div id="stl"></div>`,
+   app:rw('تحديث التطبيق',`<button class="btn" id="appupd">تحقق من التحديث</button>`,'يعمل داخل التطبيق على التلفزيون'),
    upd:mu('تحديث وتجارب',gp('',`<button class="btn" id="rf2">تحديث الآن</button>`)+gp('',tb('fresh','لون المؤشر'))+gp('',tb('off','انقطاع الإنترنت')),'تنتهي التجارب تلقائياً'),
    ref:rw('تحديث البيانات تلقائياً',seg('refresh')),
    rst:rw('استعادة الإعدادات الافتراضية',`<button class="btn danger" id="rst">استعادة</button>`)};
   let G;
   if(cards)G={look:P.design+P.mode+P.font+P.fs+P.sui,bgc:P.bg1+P.bg2+P.bg3+P.bg4+P.bg5,home:P.weather+P.pray+P.h1+P.h2+P.h3,spt:P.sp1+P.sp2+P.sp3+P.sp4,
-    alr:P.al1+P.al2+P.al3+P.mon+P.msnd,spc:P.sc1+P.sc2+P.sc3+P.sc4,sys:P.stl+P.upd+P.ref+P.rst};
-  else G={look:P.design+P.mode+P.bgmu+P.font+P.fs+P.sui,sec:P.spchips+P.weather+P.pray+P.showchips+P.spec,alr:P.alert+P.mon+P.msnd+P.tests,sys:P.stl+P.upd+P.ref+P.rst};
+    alr:P.al1+P.al2+P.al3+P.mon+P.msnd,spc:P.sc1+P.sc2+P.sc3+P.sc4,sys:P.stl+P.app+P.upd+P.ref+P.rst};
+  else G={look:P.design+P.mode+P.bgmu+P.font+P.fs+P.sui,sec:P.spchips+P.weather+P.pray+P.showchips+P.spec,alr:P.alert+P.mon+P.msnd+P.tests,sys:P.stl+P.app+P.upd+P.ref+P.rst};
   if(cards){
     $('sbar').innerHTML='';
     $('sbody').innerHTML=`<div id="cards">`+CARDS.map(([k,l])=>`<button class="card" data-c="${k}"><b>${l}</b><small></small></button>`).join('')+`</div>`
@@ -452,9 +453,20 @@ function buildSettings(){
     setSub(SSUB);
   }
   $('rf2').onclick=()=>loadData(true);
+  const au=$('appupd');
+  if(au)au.onclick=()=>{
+    if(!window.TabukApp||!TabukApp.checkUpdate){toast('التحديث يعمل داخل التطبيق فقط');return}
+    if(au.dataset.ready==='1'){au.dataset.ready='0';au.textContent='جارٍ التحديث…';try{TabukApp.startUpdate()}catch(e){}pollUpd(au);return}
+    au.textContent='جارٍ الفحص…';try{TabukApp.checkUpdate()}catch(e){}pollUpd(au)};
   $('rst').onclick=e=>{const b=e.currentTarget;if(b.dataset.arm==='on'){S={...DEF};save();applyS();buildSettings();bgNext(true);toast('تمت استعادة الإعدادات الافتراضية');disarm()}else{b.dataset.arm='on';b.textContent='اضغط مرة ثانية للتأكيد';clearTimeout(armT);armT=setTimeout(disarm,4000)}};
   syncSettings();
 }
+function pollUpd(b){let n=0;const iv=setInterval(()=>{n++;let s='';try{s=TabukApp.updateState()||''}catch(e){}
+  if(s.indexOf('uptodate|')===0){b.textContent='التطبيق محدَّث ✅ ('+s.split('|')[1]+')';b.dataset.ready='0';clearInterval(iv)}
+  else if(s.indexOf('available|')===0){b.textContent='حدّث الآن إلى '+s.split('|')[1];b.dataset.ready='1';clearInterval(iv)}
+  else if(s.indexOf('error|')===0){b.textContent='تعذّر الفحص، أعد المحاولة';b.dataset.ready='0';clearInterval(iv)}
+  else if(s&&s!=='idle'&&s!=='checking'){b.textContent=s;b.dataset.ready='0'}
+  if(n>120)clearInterval(iv)},1500)}
 let armT;function disarm(){const b=$('rst');if(b){delete b.dataset.arm;b.textContent='استعادة'}}
 function syncSettings(){
   $$('[data-s]').forEach(b=>b.setAttribute('aria-pressed',String(String(S[b.dataset.s])===b.dataset.v)));
